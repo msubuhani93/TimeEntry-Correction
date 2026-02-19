@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Time Entry / Correction | Deloitte</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-left">
+      <span class="logo">Deloitte.</span>
+      <span class="header-sep"></span>
+      <span class="app-title">Time Entry / Correction</span>
+    </div>
+    <div class="header-right">
+      <div class="user-avatar" aria-label="User profile"></div>
+    </div>
+  </header>
+
+  <main class="main-content merged">
+    <!-- Dashboard: Create Request button + table -->
+    <section class="dashboard-section" aria-label="Requests dashboard">
+      <div class="dashboard-header">
+        <h2 class="dashboard-title">Requests</h2>
+        <div class="dashboard-actions">
+          <button type="button" id="createRequestBtn" class="btn btn-primary">
+            Create Request
+          </button>
+          <button type="button" id="exportBtn" class="btn btn-secondary btn-export">
+            <span class="btn-icon-export" aria-hidden="true"></span>
+            Export
+          </button>
+        </div>
+      </div>
+      <div class="dashboard-wrap">
+        <table class="dashboard-table" id="dashboardTable">
+          <thead>
+            <tr>
+              <th class="col-request-id">Request ID</th>
+              <th class="col-country">Country</th>
+              <th class="col-stage">Stage</th>
+              <th class="col-status">Status</th>
+              <th class="col-num-records">Number of records</th>
+              <th class="col-impacted">Impacted Records</th>
+              <th class="col-requested-by">Requested by</th>
+              <th class="col-created-on">Created on</th>
+              <th class="col-service-now">Service Now Link</th>
+              <th class="col-failure-ritm">Failure RITM</th>
+              <th class="col-files">Files</th>
+            </tr>
+          </thead>
+          <tbody id="dashboardBody">
+          </tbody>
+        </table>
+      </div>
+      <p class="dashboard-empty" id="dashboardEmpty">No requests yet. Click Create Request to submit a file for validation.</p>
+    </section>
+  </main>
+
+  <!-- Modal: Create New Request form -->
+  <div id="formModal" class="modal" aria-modal="true" aria-labelledby="modalTitle" role="dialog" hidden>
+    <div class="modal-overlay" id="modalOverlay"></div>
+    <div class="modal-content">
+      <div class="form-card">
+        <h2 id="modalTitle" class="form-card-title">Create New Request</h2>
+        <p class="form-instruction">Please fill out the form and submit the request.</p>
+
+        <form id="timeCorrectionForm" class="form" novalidate>
+          <div class="form-row">
+            <div class="field-group">
+              <label for="country">Country<span class="required">*</span></label>
+              <div class="select-wrapper" title="Select">
+                <select id="country" name="country" required aria-required="true">
+                  <option value="" disabled selected>Select</option>
+                  <option value="AU">Australia (AU)</option>
+                  <option value="IN">India (IN)</option>
+                </select>
+                <span class="select-chevron" aria-hidden="true"></span>
+              </div>
+              <span class="field-hint">GFS supported countries</span>
+            </div>
+
+            <div class="field-group">
+              <label for="requestType">Request Type<span class="required">*</span></label>
+              <div class="select-wrapper select-disabled">
+                <select id="requestType" name="requestType" disabled required aria-required="true">
+                  <option value="Time Correction" selected>Time Correction</option>
+                </select>
+                <span class="select-chevron" aria-hidden="true"></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="field-group upload-section">
+            <label>Choose a file or drag & drop it here</label>
+            <div id="csvDropZone" class="drop-zone" aria-label="CSV file upload">
+              <span class="drop-zone-icon" aria-hidden="true"></span>
+              <p class="drop-zone-text">Choose a file or drag & drop it here</p>
+              <p class="drop-zone-hint">Only CSV format is supported.</p>
+              <button type="button" id="browseCsv" class="btn btn-secondary" disabled>Browse File</button>
+              <input type="file" id="csvFile" name="csvFile" accept=".csv" hidden />
+            </div>
+            <p id="csvFileName" class="file-chosen" aria-live="polite"></p>
+          </div>
+
+          <div class="field-group">
+            <label for="documentName">Document Name</label>
+            <input type="text" id="documentName" name="documentName" placeholder="Enter Document Name" />
+          </div>
+
+          <div class="field-group">
+            <label for="approvalEmail">Attach Approval Email</label>
+            <input type="text" id="approvalEmail" name="approvalEmail" placeholder="Reference or link (optional). Only Email (.msg) is supported." />
+          </div>
+
+          <div class="form-actions">
+            <button type="button" id="submitValidation" class="btn btn-primary" disabled>Submit File validation</button>
+            <button type="button" id="cancelBtn" class="btn btn-outline">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stage history modal - timeline design -->
+  <div id="stageHistoryModal" class="modal stage-history-modal" aria-modal="true" role="dialog" aria-labelledby="stageHistoryTitle" hidden>
+    <div class="modal-overlay stage-history-overlay" id="stageHistoryOverlay"></div>
+    <div class="modal-content stage-history-content">
+      <div class="stage-history-header">
+        <h2 id="stageHistoryTitle" class="stage-history-title">Stage history</h2>
+        <p class="stage-history-request-id" id="stageHistoryRequestId"></p>
+      </div>
+      <div class="stage-history-timeline" id="stageHistoryTimeline"></div>
+      <button type="button" class="btn btn-primary stage-history-close" id="stageHistoryClose">Done</button>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="alert" aria-live="polite" hidden></div>
+
+  <footer class="app-footer">
+    <span class="footer-icon" aria-hidden="true"></span>
+    <span class="footer-pagination">< 1 of 1 ></span>
+    <span class="footer-updated">Link updated: Feb 18, 25</span>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
